@@ -5,8 +5,45 @@
 #include <sstream>
 #include "movie_class.h"
 #include <ctime>
-
+#include <algorithm>
+#include <map>
 using namespace std;
+
+void calculateStatistics(const vector<Movie>& movies) {
+    map<string, vector<double>> ratingsMap;
+
+    // Populate the ratings map
+    for (const auto& movie : movies) {
+        ratingsMap[movie.getMovieName()].push_back(movie.getRating());
+    }
+
+    // Calculate and print mean and median ratings
+    for (const auto& pair : ratingsMap) {
+        const string& movieName = pair.first;
+        const vector<double>& ratings = pair.second;
+
+        // Calculate mean rating
+        double sum = 0.0;
+        for (double rating : ratings) {
+            sum += rating;
+        }
+        double mean = sum / ratings.size();
+
+        // Calculate median rating
+        vector<double> sortedRatings = ratings;
+        sort(sortedRatings.begin(), sortedRatings.end());
+        double median;
+        size_t size = sortedRatings.size();
+        if (size % 2 == 0) {
+            median = (sortedRatings[size / 2 - 1] + sortedRatings[size / 2]) / 2.0;
+        } else {
+            median = sortedRatings[size / 2];
+        }
+
+        // Print results
+        cout << "Movie: " << movieName << ", Mean Rating: " << mean << ", Median Rating: " << median << endl;
+    }
+}
 template<typename Func, typename Arg>
 static void time_measurement(Func func, Arg arg, int start, int end) {
     clock_t start_time = clock();
@@ -186,5 +223,6 @@ int main() {
     double elapsed_secs1 = double(end1 - start1) / CLOCKS_PER_SEC;
     cout << fixed << setprecision(9);
     cout << "Time taken to sort elements " << elapsed_secs1 << " seconds" << endl;
+    calculateStatistics(movies_10000);
     return 0;
 }
