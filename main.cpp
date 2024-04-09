@@ -6,53 +6,52 @@
 #include "movie_class.h"
 #include <ctime>
 #include <algorithm>
+#include <numeric>
 #include <map>
 using namespace std;
 
-void calculateStatistics(const vector<Movie>& movies) {
-    map<string, vector<double>> ratingsMap;
+void calculateMeanAndMedian(const std::vector<Movie>& movies) {
+    // Calculate mean
+    double mean = 0.0;
+    for (const auto& movie : movies)
+    {
+        double rating = movie.getRating();
+        if (std::isnan(rating))
+        {
+            continue;
+        }
+        else
+        {
+            mean += movie.getRating();
+        }
+    }
+    mean /= movies.size();
+    std::cout << "Mean rating: " << mean << std::endl;
 
-    // Populate the ratings map
+    // Calculate median
+    std::vector<double> ratings;
     for (const auto& movie : movies) {
-        ratingsMap[movie.getMovieName()].push_back(movie.getRating());
+        ratings.push_back(movie.getRating());
     }
-
-    // Calculate and print mean and median ratings
-    for (const auto& pair : ratingsMap) {
-        const string& movieName = pair.first;
-        const vector<double>& ratings = pair.second;
-
-        // Calculate mean rating
-        double sum = 0.0;
-        for (double rating : ratings) {
-            sum += rating;
-        }
-        double mean = sum / ratings.size();
-
-        // Calculate median rating
-        vector<double> sortedRatings = ratings;
-        sort(sortedRatings.begin(), sortedRatings.end());
-        double median;
-        size_t size = sortedRatings.size();
-        if (size % 2 == 0) {
-            median = (sortedRatings[size / 2 - 1] + sortedRatings[size / 2]) / 2.0;
-        } else {
-            median = sortedRatings[size / 2];
-        }
-
-        // Print results
-        cout << "Movie: " << movieName << ", Mean Rating: " << mean << ", Median Rating: " << median << endl;
+    std::sort(ratings.begin(), ratings.end());
+    double median = 0.0;
+    if (movies.size() % 2 == 0) {
+        median = (ratings[movies.size() / 2 - 1] + ratings[movies.size() / 2]) / 2.0;
+    } else {
+        median = ratings[movies.size() / 2];
     }
+    std::cout << "Median rating: " << median << std::endl;
 }
-template<typename Func, typename Arg>
-static void time_measurement(Func func, Arg arg, int start, int end) {
-    clock_t start_time = clock();
-    func(arg, start, end); // Call func with the argument and range
-    clock_t end_time = clock();
-    double elapsed_secs = double(end_time - start_time) / CLOCKS_PER_SEC;
-    std::cout << std::fixed << std::setprecision(9);
-    std::cout << "Time taken to sort elements: " << elapsed_secs << " seconds" << std::endl;
-}
+
+//template<typename Func, typename Arg>
+//static void time_measurement(Func func, Arg arg, int start, int end) {
+//    clock_t start_time = clock();
+//    func(arg, start, end); // Call func with the argument and range
+//    clock_t end_time = clock();
+//    double elapsed_secs = double(end_time - start_time) / CLOCKS_PER_SEC;
+//    std::cout << std::fixed << std::setprecision(9);
+//    std::cout << "Time taken to sort elements: " << elapsed_secs << " seconds" << std::endl;
+//}
 void bucketSort(vector<Movie>& movies) {
     // Define a vector of vectors to hold the buckets
     vector<vector<Movie>> buckets(11); // Assuming ratings are in the range [0, 10]
@@ -80,6 +79,7 @@ void bucketSort(vector<Movie>& movies) {
     for (const auto& bucket : buckets) {
         movies.insert(movies.end(), bucket.begin(), bucket.end());
     }
+
 }
 
 void merge(std::vector<Movie>& movies, int left, int mid, int right) {
@@ -205,7 +205,6 @@ int main() {
     cout << fixed << setprecision(9);
     cout << "Time taken to select data" << elapsed_secs << " seconds" << endl;
     int length = movies.size();
-    cout<<"vector size1 "<<length<<endl;
 
 
     std::vector<Movie> movies_10000(movies.begin(), movies.begin() + 10000);
@@ -213,16 +212,47 @@ int main() {
     std::vector<Movie> movies_500000(movies.begin(), movies.begin() + 500000);
 
 
-    time_measurement(mergeSort, movies_500000, 0, movies_500000.size() - 1);
-    //time_measurement(quickSort, movies_500000, 0, movies_500000.size() - 1);
-
-
     clock_t start1 = clock();
-    bucketSort(movies);
+    mergeSort(movies_10000,0,movies_10000.size());
     clock_t end1 = clock();
     double elapsed_secs1 = double(end1 - start1) / CLOCKS_PER_SEC;
     cout << fixed << setprecision(9);
-    cout << "Time taken to sort elements " << elapsed_secs1 << " seconds" << endl;
-    calculateStatistics(movies_10000);
+    cout << "Time1 taken to sort elements " << elapsed_secs1 << " seconds" << endl;
+    clock_t start2 = clock();
+    mergeSort(movies_100000,0,movies_100000.size());
+    clock_t end2 = clock();
+    double elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC;
+    cout << fixed << setprecision(9);
+    cout << "Time2 taken to sort elements " << elapsed_secs2 << " seconds" << endl;
+    clock_t start3 = clock();
+    mergeSort(movies_500000,0,movies_500000.size());
+    clock_t end3 = clock();
+    double elapsed_secs3 = double(end3 - start3) / CLOCKS_PER_SEC;
+    cout << fixed << setprecision(9);
+    cout << "Time3 taken to sort elements " << elapsed_secs3 << " seconds" << endl;
+    clock_t start4 = clock();
+    mergeSort(movies,0,movies.size());
+    clock_t end4 = clock();
+    double elapsed_secs4 = double(end4 - start4) / CLOCKS_PER_SEC;
+    cout << fixed << setprecision(9);
+    cout << "Time4 taken to sort elements " << elapsed_secs4 << " seconds" << endl;
+    //bucketsort
+//    Time1 taken to sort elements 0.003450000 seconds
+//    Time2 taken to sort elements 0.032982000 seconds
+//    Time3 taken to sort elements 0.148429000 seconds
+//    Time4 taken to sort elements 0.354872000 seconds
+//    calculateMeanAndMedian(movies_10000);
+//    calculateMeanAndMedian(movies_100000);
+//    calculateMeanAndMedian(movies_500000);
+//    calculateMeanAndMedian(movies);
+    //QuickSort
+//    Time1 taken to sort elements 0.020921000 seconds
+//    Time2 taken to sort elements 1.852608000 seconds
+//    Time3 taken to sort elements 56.128950000 seconds
+    //MergeSort
+//    Time1 taken to sort elements 0.034149000 seconds
+//    Time2 taken to sort elements 0.390409000 seconds
+//    Time3 taken to sort elements 2.265066000 seconds
+//    Time4 taken to sort elements 4.411145000 seconds
     return 0;
 }
