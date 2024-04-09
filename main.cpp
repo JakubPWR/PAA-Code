@@ -126,29 +126,44 @@ void mergeSort(std::vector<Movie>& movies, int left, int right) {
         merge(movies, left, mid, right);
     }
 }
-
 int partition(std::vector<Movie>& movies, int low, int high) {
-    double pivot = movies[high].getRating();
+    double pivot = movies[low + (high - low) / 2].getRating(); // Choosing pivot as middle element
     int i = low - 1;
+    int j = high + 1;
+    while (true) {
+        do {
+            ++i;
+        } while (movies[i].getRating() < pivot);
 
-    for (int j = low; j <= high - 1; j++) {
-        if (movies[j].getRating() < pivot) {
-            i++;
-            std::swap(movies[i], movies[j]);
-        }
+        do {
+            --j;
+        } while (movies[j].getRating() > pivot);
+
+        if (i >= j)
+            return j;
+
+        std::swap(movies[i], movies[j]);
     }
-    std::swap(movies[i + 1], movies[high]);
-    return (i + 1);
 }
 
 void quickSort(std::vector<Movie>& movies, int low, int high) {
     if (low < high) {
         int pi = partition(movies, low, high);
-        quickSort(movies, low, pi - 1);
+        quickSort(movies, low, pi);
         quickSort(movies, pi + 1, high);
     }
 }
 
+void quickSort(std::vector<Movie>& movies) {
+    quickSort(movies, 0, movies.size() - 1);
+}
+
+
+void removeMoviesWithNaN(std::vector<Movie>& movies) {
+    movies.erase(std::remove_if(movies.begin(), movies.end(), [](const Movie& movie) {
+        return std::isnan(movie.getRating());
+    }), movies.end());
+}
 
 int main() {
     string data_path = "/Users/jakubgodlewski/Desktop/C++/c++projects/PAA-dane.csv";
@@ -204,34 +219,36 @@ int main() {
     double elapsed_secs = double(end - start) / CLOCKS_PER_SEC;
     cout << fixed << setprecision(9);
     cout << "Time taken to select data" << elapsed_secs << " seconds" << endl;
-    int length = movies.size();
 
 
     std::vector<Movie> movies_10000(movies.begin(), movies.begin() + 10000);
     std::vector<Movie> movies_100000(movies.begin(), movies.begin() + 100000);
     std::vector<Movie> movies_500000(movies.begin(), movies.begin() + 500000);
-
+    removeMoviesWithNaN(movies_10000);
+    removeMoviesWithNaN(movies_100000);
+    removeMoviesWithNaN(movies_500000);
+    removeMoviesWithNaN(movies);
 
     clock_t start1 = clock();
-    mergeSort(movies_10000,0,movies_10000.size());
+    quickSort(movies_10000,0,movies_10000.size()-1);
     clock_t end1 = clock();
     double elapsed_secs1 = double(end1 - start1) / CLOCKS_PER_SEC;
     cout << fixed << setprecision(9);
     cout << "Time1 taken to sort elements " << elapsed_secs1 << " seconds" << endl;
     clock_t start2 = clock();
-    mergeSort(movies_100000,0,movies_100000.size());
+    quickSort(movies_100000,0,movies_100000.size()-1);
     clock_t end2 = clock();
     double elapsed_secs2 = double(end2 - start2) / CLOCKS_PER_SEC;
     cout << fixed << setprecision(9);
     cout << "Time2 taken to sort elements " << elapsed_secs2 << " seconds" << endl;
     clock_t start3 = clock();
-    mergeSort(movies_500000,0,movies_500000.size());
+    quickSort(movies_500000,0,movies_500000.size()-1);
     clock_t end3 = clock();
     double elapsed_secs3 = double(end3 - start3) / CLOCKS_PER_SEC;
     cout << fixed << setprecision(9);
     cout << "Time3 taken to sort elements " << elapsed_secs3 << " seconds" << endl;
     clock_t start4 = clock();
-    mergeSort(movies,0,movies.size());
+    quickSort(movies,0,movies.size()-1);
     clock_t end4 = clock();
     double elapsed_secs4 = double(end4 - start4) / CLOCKS_PER_SEC;
     cout << fixed << setprecision(9);
@@ -246,9 +263,10 @@ int main() {
 //    calculateMeanAndMedian(movies_500000);
 //    calculateMeanAndMedian(movies);
     //QuickSort
-//    Time1 taken to sort elements 0.020921000 seconds
-//    Time2 taken to sort elements 1.852608000 seconds
-//    Time3 taken to sort elements 56.128950000 seconds
+//    Time1 taken to sort elements 0.008395000 seconds
+//    Time2 taken to sort elements 0.104662000 seconds
+//    Time3 taken to sort elements 0.597033000 seconds
+//    Time4 taken to sort elements 1.145342000 seconds
     //MergeSort
 //    Time1 taken to sort elements 0.034149000 seconds
 //    Time2 taken to sort elements 0.390409000 seconds
